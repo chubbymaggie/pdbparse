@@ -123,8 +123,7 @@ def enum_pretty_str(enum):
     enumerated = []
     utypename = get_tpname(enum.utype)
     for e in enum.fieldlist.substructs:
-        e_val = -1 if e.enum_value == '\xff' else e.enum_value
-        enumerated.append("%s = %d" % (e.name, e_val))
+        enumerated.append("%s = %d" % (e.name, e.enum_value))
     return (enum.name + (" (%s)\n    " % utypename) + 
             "\n    ".join(enumerated))
 
@@ -132,10 +131,10 @@ pdb = pdbparse.parse(sys.argv[1])
 structs = [ s for s in pdb.streams[2].types.values() if (s.leaf_type == "LF_STRUCTURE" or s.leaf_type == "LF_UNION") and not s.prop.fwdref ]
 enums = [ e for e in pdb.streams[2].types.values() if e.leaf_type == "LF_ENUM" and not e.prop.fwdref ]
 
-print "*******  Structures  *******"
+print ("*******  Structures  *******")
 for s in structs:
-    print struct_pretty_str(s)
+    print (struct_pretty_str(s))
 
-print "******* Enumerations *******"
+print ("******* Enumerations *******")
 for e in enums:
-    print enum_pretty_str(e)
+    print (enum_pretty_str(e))

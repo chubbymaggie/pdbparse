@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+# Python 2 and 3
+from io import BytesIO
+
+# Python 2 and 3: forward-compatible
+from builtins import range 
+
 from construct import *
 
 _ALIGN = 4
@@ -21,7 +27,7 @@ def SymbolRange(name):
     )
 
 DBIHeader = Struct("DBIHeader",
-    Const(Bytes("magic", 4), "\xFF\xFF\xFF\xFF"),                           # 0
+    Const(Bytes("magic", 4), b"\xFF\xFF\xFF\xFF"),                          # 0
     ULInt32("version"),                                                     # 4
     ULInt32("age"),                                                         # 8
     SLInt16("gssymStream"),                                                 # 12
@@ -40,10 +46,36 @@ DBIHeader = Struct("DBIHeader",
     ULInt32("ecinfoSize"),                                                  # 52
     ULInt16("flags"),                                                       # 56
     Enum(ULInt16("Machine"),                                                # 58
-        IMAGE_FILE_MACHINE_UNKNOWN = 0x0,
-        IMAGE_FILE_MACHINE_I386 = 0x014c,
-        IMAGE_FILE_MACHINE_IA64 = 0x0200,
-        IMAGE_FILE_MACHINE_AMD64 = 0x8664,
+        IMAGE_FILE_MACHINE_UNKNOWN   = 0x0000,
+        IMAGE_FILE_MACHINE_I386      = 0x014c,
+        IMAGE_FILE_MACHINE_R3000     = 0x0162,
+        IMAGE_FILE_MACHINE_R4000     = 0x0166,
+        IMAGE_FILE_MACHINE_R10000    = 0x0168,
+        IMAGE_FILE_MACHINE_WCEMIPSV2 = 0x0169,
+        IMAGE_FILE_MACHINE_ALPHA     = 0x0184,
+        IMAGE_FILE_MACHINE_SH3       = 0x01a2,
+        IMAGE_FILE_MACHINE_SH3DSP    = 0x01a3,
+        IMAGE_FILE_MACHINE_SH3E      = 0x01a4,
+        IMAGE_FILE_MACHINE_SH4       = 0x01a6,
+        IMAGE_FILE_MACHINE_SH5       = 0x01a8,
+        IMAGE_FILE_MACHINE_ARM       = 0x01c0,
+        IMAGE_FILE_MACHINE_THUMB     = 0x01c2,
+        IMAGE_FILE_MACHINE_ARMNT     = 0x01c4,
+        IMAGE_FILE_MACHINE_AM33      = 0x01d3,
+        IMAGE_FILE_MACHINE_POWERPC   = 0x01f0,
+        IMAGE_FILE_MACHINE_POWERPCFP = 0x01f1,
+        IMAGE_FILE_MACHINE_IA64      = 0x0200,
+        IMAGE_FILE_MACHINE_MIPS16    = 0x0266,
+        IMAGE_FILE_MACHINE_ALPHA64   = 0x0284,
+        IMAGE_FILE_MACHINE_AXP64     = 0x0284,
+        IMAGE_FILE_MACHINE_MIPSFPU   = 0x0366,
+        IMAGE_FILE_MACHINE_MIPSFPU16 = 0x0466,
+        IMAGE_FILE_MACHINE_TRICORE   = 0x0520,
+        IMAGE_FILE_MACHINE_CEF       = 0x0cef,
+        IMAGE_FILE_MACHINE_EBC       = 0x0ebc,
+        IMAGE_FILE_MACHINE_AMD64     = 0x8664,
+        IMAGE_FILE_MACHINE_M32R      = 0x9041,
+        IMAGE_FILE_MACHINE_CEE       = 0xc0ee,
     ),
     ULInt32("resvd"),                                                       # 60
 )
@@ -61,8 +93,8 @@ DBIExHeader = Struct("DBIExHeader",
     ULInt32("offsets"),
     ULInt32("niSource"),
     ULInt32("niCompiler"),
-    CString("modName"),
-    CString("objName"),
+    CString("modName", encoding="utf8"),
+    CString("objName", encoding="utf8"),
 )
 
 DbiDbgHeader = Struct("DbiDbgHeader",
@@ -117,10 +149,10 @@ def parse_stream(stream):
     modules = [] # array of arrays of files
     files = [] # array of files (non unique)
     Names = stream.read(end - stream.tell())
-    for i in xrange(0, fileIndex.cMod):
+    for i in range(0, fileIndex.cMod):
         these = []
-        for j in xrange(modStart[i], modStart[i]+cRefCnt[i]):
-            Name = CString("Name").parse(Names[NameRef[j]:])
+        for j in range(modStart[i], modStart[i]+cRefCnt[i]):
+            Name = CString("Name", encoding="utf8").parse(Names[NameRef[j]:])
             files.append(Name)
             these.append(Name)
         modules.append(these)
@@ -140,4 +172,4 @@ def parse_stream(stream):
                      files=files)
 
 def parse(data):
-    return parse_stream(StringIO(data))
+    return parse_stream(BytesIO(data))

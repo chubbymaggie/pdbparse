@@ -1,5 +1,7 @@
+# Python 2 and 3
+from io import BytesIO
+
 from construct import *
-from cStringIO import StringIO
 from pdbparse.tpi import merge_subcon
 
 gsym = Struct("global",
@@ -10,7 +12,7 @@ gsym = Struct("global",
                 ULInt32("symtype"),
                 ULInt32("offset"),
                 ULInt16("segment"),
-                CString("name"),
+                CString("name", encoding="utf8"),
             
             ),
             0x1009 : Struct("data_v2",
